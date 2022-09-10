@@ -1,10 +1,8 @@
 # fetch_afdb_pymol
 
-after sourcing the script on pymol 
+After sourcing the script on pymol by ``run afdb.py`` or ``run afdb_noBS.py``
 
-``run afdb.py`` or ``run afdb_noBS.py``
-
-then type and run
+Then type and run
 
 ``af UNIPROTID``
 
@@ -14,13 +12,16 @@ For example,
 
 ``af A0A452S449``
 
+fetches Free fatty acid receptor 2
+
 # Dependency
 
 afdb.py requires  BeautifulSoup to show the Uniprot fasta information.
 
 afdb_noBS.py is a reduced version which does not require BautifulSoup but does not show Uniprot information (just fetches model)
 
+# Notes
 
 This script is modification of the ``fetch`` command from PyMOL source code.
 
-There're many unused pieces of code, so it's welcomed to cleaning them up on PR.
+There're many unused pieces of code inside, so it's welcomed to cleaning them up on PR.
