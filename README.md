@@ -1,10 +1,14 @@
 # fetch_afdb_pymol
 
-after sourcing the script for pymol (run afdb.py)
+after sourcing the script on pymol 
+
+``run afdb.py`` or ``run afdb_noBS.py``
+
+then type and run
 
 ``af UNIPROTID``
 
-fetches the corresponding alphafold-database structure model.
+This fetches the corresponding alphafold-database structure model.
 
 For example,
 
