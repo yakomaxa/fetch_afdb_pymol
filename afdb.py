@@ -221,13 +221,16 @@ def afdb_fetch(code, name='', state=0, finish=1, discrete=-1,
 
 
     # Print Unipot paget title
-    fp = urllib.request.urlopen("https://www.uniprot.org/uniprot/"+code)
+#  fp = urllib.request.urlopen("https://www.uniprot.org/uniprot/"+code)
+#https://rest.uniprot.org/uniprotkb/P19484.txt
+#https://rest.uniprot.org/uniprotkb/P19484.fasta
+    fp = urllib.request.urlopen("https://rest.uniprot.org/uniprotkb/"+code+".fasta")
     mybytes = fp.read()
     mystr = mybytes.decode("utf8")
     fp.close()
     html=mystr
     soup = BeautifulSoup(html,features="html.parser") 
-    #print(soup.getText().split("\n")[1])
+    print(soup.getText())
    
     if async_:
         _self.async_(_multifetch2, *args, **kwargs)
