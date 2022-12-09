@@ -1,4 +1,5 @@
 # fetch_afdb_pymol
+## for AFDB
 
 After sourcing the script on pymol by ``run afdb.py`` or ``run afdb_noBS.py``
 
@@ -13,6 +14,8 @@ For example,
 ``af A0A452S449``
 
 fetches Free fatty acid receptor 2
+
+## for ESM-atlas
 
 Similarly, after sourcing the script on pymol by ``run esmatlas.py```
 
