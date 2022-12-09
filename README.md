@@ -14,6 +14,20 @@ For example,
 
 fetches Free fatty acid receptor 2
 
+Similarly, after sourcing the script on pymol by ``run esmatlas.py```
+
+Then type and run
+
+``esm MGnifyID``
+
+This fetches the corresponding ESM-atlas structure model.
+
+For example,
+
+``esm MGYP002537940442``
+
+will work. 
+
 # Dependency
 
 afdb.py requires  BeautifulSoup to show the Uniprot fasta information.
