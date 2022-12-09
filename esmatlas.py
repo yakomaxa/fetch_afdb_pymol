@@ -20,8 +20,8 @@ fetchHosts = {
 }
 
 hostPaths = {
-    "pdb"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v4.pdb",
-    "cif"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v4.cif",
+    "pdb"  : "https://api.esmatlas.com/fetchPredictedStructure/{code}.pdb",
+    "cif"  : "https://api.esmatlas.com/fetchPredictedStructure/{code}.cif",
 }
 
 def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, file, quiet, _self=cmd):
@@ -199,8 +199,8 @@ def _multifetch2(code,name,state,finish,discrete,multiplex,zoom,type,path,file,q
 
 import urllib.request
 from bs4 import BeautifulSoup     
-def afdb_fetch(code, name='', state=0, finish=1, discrete=-1,
-           multiplex=-2, zoom=-1, type='cif', async_=0, path='',
+def esmatlas_fetch(code, name='', state=0, finish=1, discrete=-1,
+           multiplex=-2, zoom=-1, type='pdb', async_=0, path='',
            file=None, quiet=1, _self=cmd, **kwargs):
 
     state, finish, discrete = int(state), int(finish), int(discrete)
@@ -224,13 +224,13 @@ def afdb_fetch(code, name='', state=0, finish=1, discrete=-1,
 #  fp = urllib.request.urlopen("https://www.uniprot.org/uniprot/"+code) # gone outdated with uniprot updates
 #https://rest.uniprot.org/uniprotkb/P19484.txt somtimes toolarge to fetch
 #https://rest.uniprot.org/uniprotkb/P19484.fasta reasonable and informative
-    fp = urllib.request.urlopen("https://rest.uniprot.org/uniprotkb/"+code+".fasta")
-    mybytes = fp.read()
-    mystr = mybytes.decode("utf8")
-    fp.close()
-    html=mystr
-    soup = BeautifulSoup(html,features="html.parser") 
-    print(soup.getText())
+    #fp = urllib.request.urlopen("https://rest.uniprot.org/uniprotkb/"+code+".fasta")
+    #mybytes = fp.read()
+    #mystr = mybytes.decode("utf8")
+    #fp.close()
+    #html=mystr
+    #soup = BeautifulSoup(html,features="html.parser") 
+    #print(soup.getText())
    
     if async_:
         _self.async_(_multifetch2, *args, **kwargs)
@@ -242,4 +242,4 @@ def afdb_fetch(code, name='', state=0, finish=1, discrete=-1,
             _self.unblock_flush(_self)
     return r
 
-pymol.cmd.extend("af", afdb_fetch)
+pymol.cmd.extend("esm", esmatlas_fetch)

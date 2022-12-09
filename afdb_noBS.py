@@ -20,8 +20,8 @@ fetchHosts = {
 }
 
 hostPaths = {
-    "pdb"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v3.pdb",
-    "cif"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v3.cif",
+    "pdb"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v4.pdb",
+    "cif"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v4.cif",
 }
 
 def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, file, quiet, _self=cmd):
