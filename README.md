@@ -17,7 +17,7 @@ fetches Free fatty acid receptor 2
 
 ## for ESM-atlas
 
-Similarly, after sourcing the script on pymol by ``run esmatlas.py```
+Similarly, after sourcing the script on pymol by ```run esmatlas.py```
 
 Then type and run
 
