@@ -19,12 +19,12 @@ fetchHosts = {
     "pdbj": "ftp://ftp.pdbj.org/pub/pdb",
 }
 
-hostPaths = {
+hostPaths2 = {
     "pdb"  : "https://api.esmatlas.com/fetchPredictedStructure/{code}.pdb",
     "cif"  : "https://api.esmatlas.com/fetchPredictedStructure/{code}.cif",
 }
 
-def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, file, quiet, _self=cmd):
+def _fetch3(code, name, state, finish, discrete, multiplex, zoom, type, path, file, quiet, _self=cmd):
     '''
         code = str: single pdb identifier
         name = str: object name
@@ -66,7 +66,7 @@ def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, fi
     else:
         raise ValueError('type')
 
-    url = hostPaths[bioType]
+    url = hostPaths2[bioType]
     url_list = []
     for url in url if cmd.is_sequence(url) else [url]:
         url_list += [url] if '://' in url else [fetch_host + url for fetch_host in fetch_host_list]
@@ -138,7 +138,7 @@ def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, fi
     colorprinting.error(" Error-fetch: unable to load '%s'." % code)
     return DEFAULT_ERROR
 
-def _multifetch2(code,name,state,finish,discrete,multiplex,zoom,type,path,file,quiet,_self):
+def _multifetch3(code,name,state,finish,discrete,multiplex,zoom,type,path,file,quiet,_self):
     import string
     r = DEFAULT_SUCCESS
     code_list = code.split()
@@ -186,7 +186,7 @@ def _multifetch2(code,name,state,finish,discrete,multiplex,zoom,type,path,file,q
 
         obj_name = _self.get_legal_name(obj_name)
 
-        r = _fetch2(obj_code, obj_name, state, finish,
+        r = _fetch3(obj_code, obj_name, state, finish,
                    discrete, multiplex, zoom, type, path, file, quiet, _self)
 
         if chain and isinstance(r, str):
@@ -233,11 +233,11 @@ def esmatlas_fetch(code, name='', state=0, finish=1, discrete=-1,
     #print(soup.getText())
    
     if async_:
-        _self.async_(_multifetch2, *args, **kwargs)
+        _self.async_(_multifetch3, *args, **kwargs)
     else:
         try:
             _self.block_flush(_self)
-            r = _multifetch2(*args)
+            r = _multifetch3(*args)
         finally:
             _self.unblock_flush(_self)
     return r
