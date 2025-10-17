@@ -13,6 +13,55 @@ from .cmd import _cmd, \
 from .constants import _loadable
 from pymol.creating import unquote
 
+
+import re
+
+def parse_id(s):
+    if "AF_AF" == s[0:5] and "F1" == s[-2:]:
+        # RCSB's AFDB copy like "AF_AFA0A009IHW8F1"
+        print("seems RCSB")
+        return (s[5:-2])
+    if "AF-" == s[0:3]:
+        # AFDB ID, especially model file names like "AF-Q5VSL9-F1-model_v6.cif"
+        print("seems AFDB ID")
+        ss = s.split("-")
+        if ss[0] == "AF" and ss[2] == "F1" and ss[3].split("_")[0] == "model":
+            return ss[1]
+    else:
+        if "-" in s:
+            ss = s.split("-")
+            for sss in ss:
+                if "." in sss:
+                    sss = sss.split(".")[0]
+                if (len(sss) == 5 or len(sss) == 10):
+                    cs = re.sub(r'[^0-9]', '', sss)
+                    if all(c.isupper() for c in cs):
+                        return(sss)
+                    
+        else:
+            clean = re.sub(r'[^A-Z0-9]', '', s)
+            return clean
+
+def extract_uniprotID(s):
+    if "://" in s:
+        # seems like URL
+        ss=s.split("/")
+        for s in ss:
+            # UniProt ID has Upper Cases, but other URL elements would not
+            if any(c.isupper() for c in s):
+                return parse_id(s)
+    else:
+        return parse_id(s)
+
+def extract_middle_token(s):
+    # Split on '-' or '/'
+    parts = re.split(r'[-/]', s)
+    # Return the middle part if there are 3 or more segments
+    if len(parts) >= 3:
+        return parts[len(parts)//2]
+    # Otherwise, just return the last meaningful part
+    return parts[-1]
+
 fetchHosts = {
     "pdb": "http://ftp.wwpdb.org/pub/pdb",
     "pdbe": "ftp://ftp.ebi.ac.uk/pub/databases/pdb",
@@ -20,9 +69,11 @@ fetchHosts = {
 }
 
 hostPaths = {
-    "pdb"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v4.pdb",
-    "cif"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v4.cif",
+    "pdb"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v{version}.pdb",
+    "cif"  : "https://alphafold.ebi.ac.uk/files/AF-{code}-F1-model_v{version}.cif",
 }
+
+versions = [6,5,4,3,2,1]
 
 def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, file, quiet, _self=cmd):
     '''
@@ -45,51 +96,33 @@ def _fetch2(code, name, state, finish, discrete, multiplex, zoom, type, path, fi
     # bioType is the string representation of the type
     # nameFmt is the file name pattern after download
     bioType = type
-    nameFmt = '{code}.{type}'
-    if type == 'pdb':
-        pass
-    elif type in ('fofc', '2fofc'):
-        nameFmt = '{code}_{type}.ccp4'
-    elif type == 'emd':
-        nameFmt = '{type}_{code}.ccp4'
-    elif type in ('cid', 'sid'):
-        bioType = 'pubchem'
-        nameFmt = '{type}_{code}.sdf'
-    elif type == 'cif':
-        pass
-    elif type == 'mmtf':
-        pass
-    elif type == 'cc':
-        nameFmt = '{code}.cif'
-    elif re.match(r'pdb\d+$', type):
-        bioType = 'bio'
-    else:
-        raise ValueError('type')
-
+    nameFmt = 'AF-{code}-F1-model_v{version}.{type}'
     url = hostPaths[bioType]
     url_list = []
     for url in url if cmd.is_sequence(url) else [url]:
-        url_list += [url] if '://' in url else [fetch_host + url for fetch_host in fetch_host_list]
+        for version in versions:
+            format_url = url.format(mid=code[-3:-1], code=code, type=type, version=str(version))
+            url_list += [format_url] if '://' in url else [fetch_host + url for fetch_host in fetch_host_list]
 
 #    if bioType not in ['cc','bcif']:
 #        code = code.lower()
 
     fobj = None
     contents = None
-
-    if not file or file in (1, '1', 'auto'):
-        file = os.path.join(path, nameFmt.format(code=code, type=type))
-
-    if not is_string(file):
-        fobj = file
-        file = None
-    elif os.path.exists(file):
-        # skip downloading
-        url_list = []
-
+    
     for url in url_list:
-        url = url.format(mid=code[-3:-1], code=code, type=type)
+        print(url)
+        filename = url.split("/")[-1]        
+        if name is not None:
+            name = filename.split(".")[0]
+        file = os.path.join(path, filename)
 
+        if not is_string(file):
+            fobj = file
+            file = None
+        elif os.path.exists(file):
+            # skip downloading
+            pass            
         try:
             contents = _self.file_read(url)
 
@@ -202,7 +235,7 @@ from bs4 import BeautifulSoup
 def afdb_fetch(code, name='', state=0, finish=1, discrete=-1,
            multiplex=-2, zoom=-1, type='cif', async_=0, path='',
            file=None, quiet=1, _self=cmd, **kwargs):
-
+    code = extract_uniprotID(code)
     state, finish, discrete = int(state), int(finish), int(discrete)
     multiplex, zoom = int(multiplex), int(zoom)
     async_, quiet = int(kwargs.pop('async', async_)), int(quiet)
@@ -221,16 +254,23 @@ def afdb_fetch(code, name='', state=0, finish=1, discrete=-1,
 
 
     # Print Unipot paget title
-#  fp = urllib.request.urlopen("https://www.uniprot.org/uniprot/"+code) # gone outdated with uniprot updates
-#https://rest.uniprot.org/uniprotkb/P19484.txt somtimes toolarge to fetch
-#https://rest.uniprot.org/uniprotkb/P19484.fasta reasonable and informative
-    fp = urllib.request.urlopen("https://rest.uniprot.org/uniprotkb/"+code+".fasta")
-    mybytes = fp.read()
-    mystr = mybytes.decode("utf8")
-    fp.close()
-    html=mystr
-    soup = BeautifulSoup(html,features="html.parser") 
-    print(soup.getText())
+    uni = "https://rest.uniprot.org/uniprotkb/"+code+".txt"
+    with urllib.request.urlopen(uni) as fp:
+        data = fp.read().decode("utf-8")
+        # Print content
+        print(data)
+
+    # Save to file named "<code>.txt"
+    if len(data) == 0:
+        print(f"This entry {code} is not available in UniProt")
+        uni = "https://rest.uniprot.org/unisave/" + code
+        with urllib.request.urlopen(uni) as fp:
+            data = fp.read().decode("utf-8")
+            print(data)
+
+    with open(f"{code}.txt", "w", encoding="utf-8") as f:
+        f.write(data)
+        print(f"Saved as {code}.txt")
    
     if async_:
         _self.async_(_multifetch2, *args, **kwargs)
